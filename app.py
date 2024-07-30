@@ -70,6 +70,7 @@ with st.sidebar:
 client = Client(st.session_state['api_key'])
 
 if 'search_id' not in st.session_state:
+    st.subheader("Select Search Result")
     search_results = client.get_search_results()
     sr_df = pd.DataFrame([sr.dict() for sr in search_results])
     selection = st.dataframe(sr_df, use_container_width=True, hide_index=True,
@@ -91,9 +92,6 @@ else:
 
     result = Result(client, search_result.id)
     proteins = list(result.protein_iterable())
-    for protein in proteins:
-        print(len(list(protein.peptides())))
-
     protein_df = pd.DataFrame([protein.protein.dict() for protein in proteins])
     protein_df['seq_cnt'] = protein_df['peptide_sequences'].apply(lambda x: len(x))
     selection = st.dataframe(protein_df, use_container_width=True, hide_index=True,
@@ -114,11 +112,12 @@ else:
             serialized_peptides.append(f'{peptide_sequence};{psms}')
 
         serialized_peptides = ','.join(serialized_peptides)
-
-        st.write(f"Selected Protein: {protein_name}")
         db, protein_id, protein_name = protein_name.split('|')
-        st.write(f"Peptides: {serialized_peptides}")
+
+        with st.expander('Debug'):
+            st.write(f"Selected Protein: {protein_name}")
+            st.write(f"Peptides: {serialized_peptides}")
 
         PDB_APP = f'https://pdb-coverage.streamlit.app/?protein_id={protein_id}&input_type=redundant_peptides&input={serialized_peptides}'
 
-        st.link_button("View in PDB", PDB_APP, use_container_width=True)
+        st.link_button("View in PDB", PDB_APP, use_container_width=True, type='primary')
