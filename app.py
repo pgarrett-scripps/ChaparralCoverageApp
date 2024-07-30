@@ -2,6 +2,8 @@ from chaparralapi import Client, Result
 import streamlit as st
 import pandas as pd
 
+st.set_page_config(page_title="PDB Coverage", layout="wide", page_icon="🧬")
+
 
 def login_dialog():
     """
@@ -70,8 +72,8 @@ with st.sidebar:
 client = Client(st.session_state['api_key'])
 
 if 'search_id' not in st.session_state:
-    st.subheader("Select Search Result")
-    search_results = client.get_search_results()
+    st.subheader("Select Search Result", divider=True)
+    search_results = client.get_search_results('SUCCEEDED')
     sr_df = pd.DataFrame([sr.dict() for sr in search_results])
     selection = st.dataframe(sr_df, use_container_width=True, hide_index=True,
                              on_select='rerun', selection_mode='single-row')
@@ -82,7 +84,7 @@ if 'search_id' not in st.session_state:
         st.session_state['search_id'] = selected_ids[0]
         st.rerun()
 else:
-    st.subheader("Selected Search Result")
+    st.subheader("Selected Search Result", divider=True)
     search_result = client.get_search_result(st.session_state['search_id'])
     sr_df = pd.DataFrame([search_result.dict()])
     st.dataframe(sr_df, use_container_width=True, hide_index=True)
@@ -90,6 +92,7 @@ else:
         del st.session_state['search_id']
         st.rerun()
 
+    st.subheader("Select Protein", divider=True)
     result = Result(client, search_result.id)
     proteins = list(result.protein_iterable())
     protein_df = pd.DataFrame([protein.protein.dict() for protein in proteins])
