@@ -75,6 +75,11 @@ if 'search_id' not in st.session_state:
     st.subheader("Select Search Result", divider=True)
     search_results = client.get_search_results('SUCCEEDED')
     sr_df = pd.DataFrame([sr.dict() for sr in search_results])
+
+    if sr_df.empty:
+        st.warning("No search results found!")
+        st.stop()
+
     selection = st.dataframe(sr_df, use_container_width=True, hide_index=True,
                              on_select='rerun', selection_mode='single-row')
     selected_indices = [row for row in selection['selection']['rows']]
