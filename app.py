@@ -96,6 +96,11 @@ else:
     result = Result(client, search_result.id)
     proteins = list(result.protein_iterable())
     protein_df = pd.DataFrame([protein.protein.dict() for protein in proteins])
+
+    if protein_df.empty:
+        st.warning("No proteins found")
+        st.stop()
+
     protein_df['seq_cnt'] = protein_df['peptide_sequences'].apply(lambda x: len(x))
     selection = st.dataframe(protein_df, use_container_width=True, hide_index=True,
                              on_select='rerun', selection_mode='single-row')
