@@ -1,0 +1,2 @@
+chaparralapi @ git+https://github.com/pgarrett-scripps/ChaparralPythonApi@v0.2.0
+streamlit==1.37.0
