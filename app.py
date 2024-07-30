@@ -66,7 +66,7 @@ def login():
 
 
 with st.sidebar:
-    st.header("Chaparral Auto Uploader")
+    st.header("Chaparral 3d Coverage")
     login()
 
 client = Client(st.session_state['api_key'])
