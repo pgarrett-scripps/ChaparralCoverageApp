@@ -2,6 +2,7 @@ from chaparralapi import Client, Result
 import streamlit as st
 import pandas as pd
 
+
 def login_dialog():
     """
     Sets the login information in streamlit session state
@@ -88,12 +89,15 @@ else:
         del st.session_state['search_id']
         st.rerun()
 
-
     result = Result(client, search_result.id)
-    proteins = [pi.protein for pi in result.protein_iterable()]
-    protein_df = pd.DataFrame([protein.dict() for protein in proteins])
+    proteins = list(result.protein_iterable())
+    for protein in proteins:
+        print(len(list(protein.peptides())))
+
+    protein_df = pd.DataFrame([protein.protein.dict() for protein in proteins])
+    protein_df['seq_cnt'] = protein_df['peptide_sequences'].apply(lambda x: len(x))
     selection = st.dataframe(protein_df, use_container_width=True, hide_index=True,
-                                on_select='rerun', selection_mode='single-row')
+                             on_select='rerun', selection_mode='single-row')
     selected_indices = [row for row in selection['selection']['rows']]
 
     if len(selected_indices) == 1:
@@ -101,16 +105,20 @@ else:
         protein_name = selected_row['name']
         peptides = selected_row['peptide_sequences']
 
-        serialized_peptides = ';'.join(peptides)
+        protein_iter = result.get_protein_iterable(protein_name)
+
+        serialized_peptides = []
+        for peptide in protein_iter.peptides():
+            peptide_sequence = peptide.peptide.sequence
+            psms = peptide.peptide.psms
+            serialized_peptides.append(f'{peptide_sequence};{psms}')
+
+        serialized_peptides = ','.join(serialized_peptides)
 
         st.write(f"Selected Protein: {protein_name}")
         db, protein_id, protein_name = protein_name.split('|')
-        st.write(f"Peptides: {peptides}")
+        st.write(f"Peptides: {serialized_peptides}")
 
-        PDB_APP = f'https://pdb-coverage.streamlit.app/?protein_id={protein_id}&input_type=peptides&input={serialized_peptides}'
+        PDB_APP = f'https://pdb-coverage.streamlit.app/?protein_id={protein_id}&input_type=redundant_peptides&input={serialized_peptides}'
 
         st.link_button("View in PDB", PDB_APP, use_container_width=True)
-
-
-
-
